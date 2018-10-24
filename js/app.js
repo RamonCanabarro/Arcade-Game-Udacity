@@ -1,17 +1,61 @@
-// Enemies our player must avoid
-//    let y = 60
-//    let y = 140
+
 var Score = function drawScore() {
     ctx.fot = "italic bold 16px Roboto"
     ctx.fillstyle = "#0000";
     ctx.fillText("score: " + player.score, 1, 100);
 
 }
+
+class Gem extends Entity {
+    constructor(x, y, sprite) {
+        super(x, y, sprite);
+    }
+
+    update() {
+        if (
+            player.x >= this.x - 20 &&
+            player.x <= this.x + 20 &&
+            (player.y >= this.y - 20 && player.y <= this.y + 20)
+        ) {
+            for (let g = 0; g < allGems.length; g++) {
+                if (this.y === allGems[g].y) {
+                    allGems.splice(g, 1);
+                    player.changeScore(20);
+                    player.status = 'gem';
+                    player.displayStatus();
+                    player.status = 'playing';
+                    return player.delayThisStatus();
+                }
+            }
+        }
+    }
+
+    resetGems() {
+        allGems = [];
+        let tempX = [0, 100, 200, 300, 400],
+            tempY = [60, 140, 220],
+            colors = ['Gem-Blue', 'Gem-Green', 'Gem-Orange'],
+            j,
+            k;
+
+        for (let i = 0; i < 4; i++) {
+            j = Math.floor(Math.random() * 5); // Wanted gems apart so different indexes for x & y
+            k = Math.floor(Math.random() * 3);
+            allGems.push(new Gem(tempX[j], tempY[k], colors[k]));
+        }
+    }
+}
+
+var gem = new Gem(0, 60, 'Gem-Blue');
+
+gem.resetGems();
+
 var Enemy = function (y, speed) {
     // Variables applied to each of our instances go here,
     // we've provided one for you to get started
     this.x = 0
-    this.width = 30
+    this.width = 40
+    this.height = 40
     this.y = y
     this.speed = Math.floor(Math.random() * 3 + 2);
     // The image/sprite for our enemies, this uses
@@ -37,11 +81,10 @@ Enemy.prototype.render = function () {
 };
 function checkCollisions() {
     for (var i = 0; i < allEnemies.length; i++)
-
-        if (allEnemies[i].x + allEnemies[i].width === player.x + 30
-            && allEnemies[i].x + allEnemies[i].width > !player.x
-            && allEnemies[i].y <= player.y + 30
-            && allEnemies[i].y + allEnemies[i].width >= player.y
+        if (player.x < allEnemies[i].x + allEnemies[i].width
+            && player.x + player.width > allEnemies[i].x
+            && player.y < allEnemies[i].y + allEnemies[i].height
+            && player.y + player.height > allEnemies[i].y
         ) {
             player.reset();
             player.score -= 100;
@@ -53,10 +96,11 @@ Enemy.prototype.render = function () {
 }
 var players = function () {
     this.x = 200;
-    this.y = 400;
-    this.width = 30;
+    this.y = 410;
+    this.width = 40;
     this.dx = 90;
     this.dy = 95;
+    this.height = 40
     this.sprite = 'images/char-horn-girl.png';
     this.score = 0;
 }
@@ -69,7 +113,7 @@ players.prototype.update = function (dt) {
         this.y = 400;
     } else if (this.y < 0) {
         this.y = 0
-        alert("Congratulations!")
+        alert("Congratulations")
         this.reset();
         player.score += 100;
     }
