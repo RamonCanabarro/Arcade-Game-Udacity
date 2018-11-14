@@ -1,3 +1,4 @@
+let allGems = []
 
 var Score = function drawScore() {
     ctx.fot = "italic bold 16px Roboto"
@@ -6,49 +7,66 @@ var Score = function drawScore() {
 
 }
 
-class Gem extends Entity {
-    constructor(x, y, sprite) {
-        super(x, y, sprite);
+var Gem = function(x,y) {
+    "use strict";
+    this.x = x;
+    this.y = y;
+    this.sprite = 'images/Gem Orange.png';
+    this.gemWaitTime = undefined;
+};
+
+Gem.prototype.update = function() {
+    "use strict";
+    this.checkCollision();
+};
+
+Gem.prototype.render = function() {
+    "use strict";
+    console.log(this.sprite)
+    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+};
+
+Gem.prototype.checkCollision = function() {
+    "use strict";
+    // Set hitboxes for collision detection
+    var playerBox = {x: player.x, y: player.y, width: 50, height: 40};
+    var gemBox = {x: this.x, y: this.y, width: 60, height: 70};
+    // Check for collisions, if playerBox intersects gemBox, we have one
+    if (playerBox.x < gemBox.x + gemBox.width &&
+        playerBox.x + playerBox.width > gemBox.x &&
+        playerBox.y < gemBox.y + gemBox.height &&
+        playerBox.height + playerBox.y > gemBox.y) {
+        // Collision detected, call collisionDetected function
+        this.collisionDetected();
     }
+};
 
-    update() {
-        if (
-            player.x >= this.x - 20 &&
-            player.x <= this.x + 20 &&
-            (player.y >= this.y - 20 && player.y <= this.y + 20)
-        ) {
-            for (let g = 0; g < allGems.length; g++) {
-                if (this.y === allGems[g].y) {
-                    allGems.splice(g, 1);
-                    player.changeScore(20);
-                    player.status = 'gem';
-                    player.displayStatus();
-                    player.status = 'playing';
-                    return player.delayThisStatus();
-                }
-            }
-        }
-    }
+// Gem collision detected, hide the gem off canvas,
+// Increase player score, wait 5 seconds, then reset the gem
+Gem.prototype.collisionDetected = function() {
+    "use strict";
+    this.x = 900;
+    this.y = 900;
+    player.score += 30;
+    this.wait();
+};
 
-    resetGems() {
-        allGems = [];
-        let tempX = [0, 100, 200, 300, 400],
-            tempY = [60, 140, 220],
-            colors = ['Gem-Blue', 'Gem-Green', 'Gem-Orange'],
-            j,
-            k;
+// Call setTimeout in a function so we can assign it to a variable
+// Necessary for clearTimeout(gem.gemWaitTime) to work
+Gem.prototype.wait = function() {
+    this.gemWaitTime = setTimeout( function() {
+        gem.gemReset(); // this.gemReset() doesn't work
+    }, 5000);
+};
 
-        for (let i = 0; i < 4; i++) {
-            j = Math.floor(Math.random() * 5); // Wanted gems apart so different indexes for x & y
-            k = Math.floor(Math.random() * 3);
-            allGems.push(new Gem(tempX[j], tempY[k], colors[k]));
-        }
-    }
-}
-
-var gem = new Gem(0, 60, 'Gem-Blue');
-
-gem.resetGems();
+// Reset the gem to a new location
+Gem.prototype.gemReset = function() {
+    "use strict";
+    // Gems appear at one of the following x positions: 0, 101, 202, 303, 404
+    this.x = (101 * Math.floor(Math.random() * 4) + 0);
+    // Gems appear at one of the following Y positions: 60, 145, 230
+    this.y = (60 + (85 * Math.floor(Math.random() * 3) + 0));
+};
 
 var Enemy = function (y, speed) {
     // Variables applied to each of our instances go here,
@@ -70,9 +88,6 @@ Enemy.prototype.update = function (dt) {
     if (this.x > 500) {
         this.x = -100
     }
-    // You should multiply any movement by the dt parameter
-    // which will ensure the game runs at the same speed for
-    // all computers.
 };
 
 // Draw the enemy on the screen, required method for game
@@ -156,6 +171,9 @@ var allEnemies = [enemy1, enemy2, enemy3];
 
 var player = new players();
 
+var gem = new Gem (101 * Math.floor(Math.random() * 4) + 0, 60 +
+    (85 * Math.floor(Math.random() * 3) + 0));
+    
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
