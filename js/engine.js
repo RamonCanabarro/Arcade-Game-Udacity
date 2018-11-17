@@ -38,24 +38,93 @@ var Engine = (function (global) {
          * would be the same for everyone (regardless of how fast their
          * computer is) - hurray time!
          */
-        var now = Date.now(),
-            dt = (now - lastTime) / 1000.0;
 
-        /* Call our update/render functions, pass along the time delta to
-         * our update function since it may be used for smooth animation.
-         */
-        update(dt);
-        render();
+        if (gameState === 'Game') {
+            var now = Date.now(),
+                dt = (now - lastTime) / 1000.0;
 
-        /* Set our lastTime variable which is used to determine the time delta
-         * for the next time this function is called.
-         */
-        lastTime = now;
+            /* Call our update/render functions, pass along the time delta to
+             * our update function since it may be used for smooth animation.
+             */
+            update(dt);
+            render();
 
+            /* Set our lastTime variable which is used to determine the time delta
+             * for the next time this function is called.
+             */
+            lastTime = now;
+        }
         /* Use the browser's requestAnimationFrame function to call this
          * function again as soon as the browser is able to draw another frame.
          */
         win.requestAnimationFrame(main);
+    }
+
+    function startScreen() {
+
+        /* Handle keyboard input. As soon as user choose his hero, the
+         * game starts (gameStates is changed to "Game"). */
+        function handleInput(heroes, key) {
+            playerimg = heroes[key - 1];
+            if ((key - 1 > -1) && (key - 1 < 6)) {
+                player = new Players();
+                gameState = "Game";
+                doc.removeEventListener('keyup', listen);
+                ctx.fillStyle = "white";
+                ctx.rect(0, 0, canvas.width, canvas.height);
+                ctx.fill();
+                main();
+            }
+        }
+        //Draw possible heroes
+        var heroes = [
+            'images/char-boy.png',
+            'images/char-cat-girl.png',
+            'images/char-horn-girl.png',
+            'images/char-pink-girl.png',
+            'images/char-princess-girl.png'
+        ];
+
+        ctx.fillStyle = "#525c65";
+        ctx.rect(0, 50, canvas.width, canvas.height - 50);
+        ctx.fill();
+
+        ctx.font = "bold 20pt Arial";
+        ctx.fillStyle = "#fff";
+        ctx.fillText("ARCADE GAME", 70, 90);
+
+
+        ctx.font = "normal 18pt Arial";
+        ctx.fillText("PLAYERS", 200, 170);
+        var len = heroes.length;
+        for (i = 0; i < len; i++) {
+            ctx.drawImage(Resources.get(heroes[i]), (canvas.width * (i - 1) / len) + 100, 200);
+            ctx.fillText(i + 1, (canvas.width * (i - 1) / len) + 140, 240);
+        }
+
+        ctx.font = "normal 14pt Arial";
+        ctx.fillText("Please Select your player (press 1 to 5)", 100, 420);
+
+        ctx.beginPath();
+        ctx.strokeStyle = "yellow";
+        ctx.moveTo(0, 550);
+        ctx.lineTo(canvas.width, 550);
+        ctx.stroke();
+
+        //Listen to keyboard
+        var listen = function (e) {
+            var allowedKeys = {
+                49: 1,
+                50: 2,
+                51: 3,
+                52: 4,
+                53: 5
+            };
+            handleInput(heroes, allowedKeys[e.keyCode]);
+        };
+
+        doc.addEventListener('keyup', listen);
+
     }
 
     /* This function does some initial setup that should only occur once,
@@ -120,9 +189,6 @@ var Engine = (function (global) {
             numCols = 5,
             row, col;
 
-        // Before drawing, clear existing canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
-
         /* Loop through the number of rows and columns we've defined above
          * and, using the rowImages array, draw the correct image for that
          * portion of the "grid"
@@ -141,7 +207,7 @@ var Engine = (function (global) {
         }
 
         renderEntities();
-        Score();
+        drawScore();
     }
 
     /* This function is called by the render function and is called on each game
@@ -165,6 +231,7 @@ var Engine = (function (global) {
      * those sorts of things. It's only called once by the init() method.
      */
     function reset() {
+        startScreen()
         gem.gemReset();
         clearTimeout(gem.gemWaitTime);
     }
@@ -180,6 +247,10 @@ var Engine = (function (global) {
         'images/enemy-bug.png',
         'images/char-boy.png',
         'images/char-horn-girl.png',
+        'images/char-cat-girl.png',
+        'images/char-horn-girl.png',
+        'images/char-pink-girl.png',
+        'images/char-princess-girl.png',
         'images/Gem Orange.png'
     ]);
     Resources.onReady(init);

@@ -1,36 +1,33 @@
 let allGems = []
+var gameState = "NotStarted"; //Defines state of the game. 
 
-var Score = function drawScore() {
+var playerImg = 'images/char-horn-girl.png'
+var drawScore = function () {
     ctx.fot = "italic bold 16px Roboto"
     ctx.fillstyle = "#0000";
     ctx.fillText("score: " + player.score, 1, 100);
 
 }
 
-var Gem = function(x,y) {
-    "use strict";
+var Gem = function (x, y) {
     this.x = x;
     this.y = y;
     this.sprite = 'images/Gem Orange.png';
     this.gemWaitTime = undefined;
 };
 
-Gem.prototype.update = function() {
-    "use strict";
+Gem.prototype.update = function () {
     this.checkCollision();
 };
 
-Gem.prototype.render = function() {
-    "use strict";
-    console.log(this.sprite)
+Gem.prototype.render = function () {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
-Gem.prototype.checkCollision = function() {
-    "use strict";
+Gem.prototype.checkCollision = function () {
     // Set hitboxes for collision detection
-    var playerBox = {x: player.x, y: player.y, width: 50, height: 40};
-    var gemBox = {x: this.x, y: this.y, width: 60, height: 70};
+    var playerBox = { x: player.x, y: player.y, width: 50, height: 40 };
+    var gemBox = { x: this.x, y: this.y, width: 60, height: 70 };
     // Check for collisions, if playerBox intersects gemBox, we have one
     if (playerBox.x < gemBox.x + gemBox.width &&
         playerBox.x + playerBox.width > gemBox.x &&
@@ -43,8 +40,7 @@ Gem.prototype.checkCollision = function() {
 
 // Gem collision detected, hide the gem off canvas,
 // Increase player score, wait 5 seconds, then reset the gem
-Gem.prototype.collisionDetected = function() {
-    "use strict";
+Gem.prototype.collisionDetected = function () {
     this.x = 900;
     this.y = 900;
     player.score += 30;
@@ -53,15 +49,14 @@ Gem.prototype.collisionDetected = function() {
 
 // Call setTimeout in a function so we can assign it to a variable
 // Necessary for clearTimeout(gem.gemWaitTime) to work
-Gem.prototype.wait = function() {
-    this.gemWaitTime = setTimeout( function() {
-        gem.gemReset(); // this.gemReset() doesn't work
-    }, 5000);
+Gem.prototype.wait = function () {
+    this.gemWaitTime = setTimeout(function () {
+        gem.gemReset();
+    }.bind(this), 5000);
 };
 
 // Reset the gem to a new location
-Gem.prototype.gemReset = function() {
-    "use strict";
+Gem.prototype.gemReset = function () {
     // Gems appear at one of the following x positions: 0, 101, 202, 303, 404
     this.x = (101 * Math.floor(Math.random() * 4) + 0);
     // Gems appear at one of the following Y positions: 60, 145, 230
@@ -109,17 +104,17 @@ function checkCollisions() {
 Enemy.prototype.render = function () {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 }
-var players = function () {
+var Players = function () {
     this.x = 200;
     this.y = 410;
     this.width = 40;
     this.dx = 90;
     this.dy = 95;
     this.height = 40
-    this.sprite = 'images/char-horn-girl.png';
+    this.sprite = playerImg;
     this.score = 0;
 }
-players.prototype.update = function (dt) {
+Players.prototype.update = function (dt) {
     if (this.x > 400) {
         this.x = 400;
     } else if (this.x < 0) {
@@ -134,7 +129,7 @@ players.prototype.update = function (dt) {
     }
 }
 
-players.prototype.reset = function () {
+Players.prototype.reset = function () {
     this.x = 200;
     this.y = 400;
     if (!this.score) {
@@ -142,38 +137,38 @@ players.prototype.reset = function () {
     }
 }
 
-players.prototype.render = function () {
+Players.prototype.render = function () {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 }
 // Now write your own player class
 // This class requires an update(), render() and
 // a handleInput() method.
-players.prototype.handleInput = function (keys) {
-    if ('up' === keys) {
-        this.y -= this.dy;
-    }
-    if ('down' === keys) {
-        this.y += this.dy;
-    }
-    if ('left' === keys) {
-        this.x -= this.dx;
-    }
-    if ('right' === keys) {
-        this.x += this.dx;
+Players.prototype.handleInput = function (keys) {
+    switch (keys) {
+        case 'up':
+            this.y -= this.dy;
+            break;
+        case 'down':
+            this.y += this.dy;
+        case 'left':
+            this.x -= this.dx;
+            break;
+        case 'right':
+            this.x += this.dx;
     }
 }
-var enemy1 = new Enemy(50);
-var enemy2 = new Enemy(140);
-var enemy3 = new Enemy(220);
+const allEnemies = [
+    new Enemy(50),
+    new Enemy(140),
+    new Enemy(220)
+];
 
-var allEnemies = [enemy1, enemy2, enemy3];
 
+var player = new Players();
 
-var player = new players();
-
-var gem = new Gem (101 * Math.floor(Math.random() * 4) + 0, 60 +
+var gem = new Gem(101 * Math.floor(Math.random() * 4) + 0, 60 +
     (85 * Math.floor(Math.random() * 3) + 0));
-    
+
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
